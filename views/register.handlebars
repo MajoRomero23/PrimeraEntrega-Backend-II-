@@ -1,0 +1,42 @@
+<form id="register-form">
+    <input type="text" name="first_name" placeholder="Nombre" required />
+    <input type="text" name="last_name" placeholder="Apellido" required />
+    <input type="number" name="age" placeholder="Edad" required />
+    <input type="email" name="email" placeholder="Correo electrónico" required />
+    <input type="password" name="password" placeholder="Contraseña" required />
+    <button type="submit">Crear cuenta</button>
+</form>
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        // Captura los valores del formulario
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());  // Convierte FormData a objeto
+
+        // Muestra en la consola para asegurarnos de que todos los campos estén ahí
+        console.log(data); 
+
+        try {
+            const response = await fetch('/api/sessions/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),  // Enviar los datos correctamente en formato JSON
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Registro exitoso');
+                window.location.href = '/login';
+            } else {
+                alert(result.error || 'Error al registrar');
+            }
+        } catch (error) {
+            console.error('Error al registrar el usuario:', error);
+            alert('Error interno del servidor');
+        }
+    });
+</script>
