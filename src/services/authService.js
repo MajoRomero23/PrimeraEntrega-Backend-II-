@@ -1,29 +1,8 @@
 import express from 'express';
-import { isLoggedIn, isLoggedOut } from '../middlewares/auth.js';
-import { authenticateUser, generateToken } from '../services/authService.js';
+import { authenticateUser } from '../services/authService.js';
+import { isLoggedOut } from '../middlewares/auth.js';
 
 const router = express.Router();
-
-router.get('/login', isLoggedOut, (req, res) => {
-    res.render('login');
-});
-
-router.get('/register', isLoggedOut, (req, res) => {
-    res.render('register');
-});
-
-router.get('/perfil', isLoggedIn, (req, res) => {
-    res.render('perfil', { user: req.session.user });
-});
-
-router.get('/logout', isLoggedIn, (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            return res.status(500).send('Error al cerrar sesión');
-        }
-        res.redirect('/login');
-    });
-});
 
 router.post('/login', isLoggedOut, async (req, res) => {
     const { email, password } = req.body;

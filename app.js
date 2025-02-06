@@ -6,13 +6,16 @@ import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
 import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';
+
 import userRouter from './src/routes/user.router.js';
 import sessionRouter from './src/routes/session.router.js';
 import productsRouter from './src/routes/productsRouter.js';
 import cartsRouter from './src/routes/cartsRouter.js';
 import connectDB from './src/database.js';
 import Product from './src/models/Product.js';
-import { fileURLToPath } from 'url';
+import passport from './src/middlewares/passport.config.js';
 
 // Crea el valor de __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -40,6 +43,9 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, './views'));
 
+// Cookies
+app.use(cookieParser());
+
 app.use(session({
     secret: '123ABC456DEF',
     resave: false,
@@ -47,15 +53,30 @@ app.use(session({
     cookie: { secure: process.env.NODE_ENV === 'production' ? true : false }
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Rutas
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
-app.use('/api/sessions/register', sessionRouter);
+app.use('/api/sessions', sessionRouter);
 app.use('/api', userRouter);
+
+
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+
+app.post('/api/login', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/login',
+}));
 
 app.get('/realtimeproducts', (req, res) => {
     const { limit = 10, page = 1, sort, query } = req.query;

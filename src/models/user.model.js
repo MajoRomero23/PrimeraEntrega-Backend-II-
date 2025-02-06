@@ -6,13 +6,14 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
     first_name: { type: String, required: true, trim: true, maxlength: 50 },
     last_name: { type: String, required: true, trim: true, maxlength: 50 },
-    email: { type: String, required: true, trim: true, match: /.+\@.+\..+/ },
-    age: { type: Number, required: true, min: 18 }, 
+    email: { type: String, required: true, trim: true, unique: true, match: /.+\@.+\..+/ },
+    age: { type: Number, required: true, min: 18 },
     password: { type: String, required: true },
     cart: { type: Schema.Types.ObjectId, ref: 'Cart' },
     role: { type: String, default: 'user' },
 }, { timestamps: true });
 
+// Hash de la contraseña antes de guardar
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
     try {
@@ -23,10 +24,6 @@ userSchema.pre('save', async function (next) {
         next(error);
     }
 });
-
-userSchema.methods.comparePassword = async function (candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
-};
 
 const UserModel = mongoose.model('User', userSchema);
 
